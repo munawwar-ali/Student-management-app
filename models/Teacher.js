@@ -1,6 +1,3 @@
-
-
-
 const mongoose = require("mongoose");
 
 const teacherSchema = mongoose.Schema({
@@ -28,4 +25,3 @@ const teacherSchema = mongoose.Schema({
 });
 
 module.exports = mongoose.model("teacher", teacherSchema);
-
