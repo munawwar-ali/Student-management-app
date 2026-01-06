@@ -36,7 +36,7 @@ const studentsSchema = mongoose.Schema({
     },
     lastPaid: Date,
   },
-  class: {
+  classStudent: {
     type: String,
     required: true,
   },

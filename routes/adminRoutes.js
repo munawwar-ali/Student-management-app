@@ -1,15 +1,14 @@
 const express = require("express");
 const routes = express.Router();
 const adminModel = require("../models/Admin");
+const studentModel = require('../models/Students')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser");
 const teacherModel = require("../models/Teacher");
 
-routes.use(express.json());
-routes.use(express.urlencoded({ extended: true }));
 
-routes.use(cookieParser());
+
+// routes.use(cookieParser());
 
 routes.get("/login", async (req, res) => {
   res.send("logged in");
@@ -17,14 +16,15 @@ routes.get("/login", async (req, res) => {
 
 routes.post("/login", async (req, res) => {
   try {
-    let user = await adminModel.findOne({ email: req.body.email });
-    if (!user) return res.send("something is wrong");
-
-    bcrypt.compare(req.body.password, user.password, function (err, result) {
+    //finding admin
+    let admin = await adminModel.findOne({ email: req.body.email });
+    if (!admin) return res.send("something is wrong");
+    //from hashed to normal
+    bcrypt.compare(req.body.password, admin.password, function (err, result) {
       if (result) {
-        let token = jwt.sign({ email: user.email }, "king");
+        let token = jwt.sign({ email: admin.email }, "king");
         res.cookie("token", token);
-
+        //send respone
         res.send("You can login");
       } else res.send("something is wrong");
       console.log(result);
@@ -38,11 +38,22 @@ routes.get("/logout", function (req, res) {
   res.cookie("token", "");
   res.send("logout successfully");
 });
-
+routes.get("/teacher", async function (req, res) {
+  try {
+    const teacher = await teacherModel.find();
+  res.send(teacher);
+  } catch (error) {
+    res.status(500).send({error:"server failed"})
+  }
+  
+});
 routes.post("/create/teacher", async function (req, res) {
   try {
     const { name, email, password, role, subject, salary, address } = req.body;
-
+    //basic validation
+    if (!name || !email || !password) {
+      res.status(400).send({ error: "name,email and password all requireds" });
+    }
     //checking teacher existing or not
     const existingTeacher = await teacherModel.findOne({ email });
     if (existingTeacher) {
@@ -77,10 +88,27 @@ routes.post("/create/teacher", async function (req, res) {
   }
 });
 
-routes.get("/create/teacher", async function (req, res) {
-  const products = await teacherModel.find();
-  res.send(products);
-});
+routes.post('/update/:teacherId',async function (req,res) {
+     try {
+      // saving data from req.body
+      const { name, email, password, role, subject, salary, address } = req.body;
+      //find and update
+    let updatedteacher = await teacherModel.findOneAndUpdate({_id:req.params.teacherId},{ name, email,role, subject, salary, address},{new:true})
+    //sending response
+    res.send(updatedteacher)
+     } catch (error) {
+      console.error(err);
+      
+        res.status(500).json({ error: "Server failed" });
+     } 
+})
+
+
+
+
+//students routes
+
+
 
 routes.get("/", function (req, res) {
   res.send("hello");
