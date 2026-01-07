@@ -12,17 +12,12 @@ const taskSchema = mongoose.Schema({
   givenby: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Teacher",
-    required: true,
-  },
-  givento: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "tasks",
-    required: true,
+   
   },
   status: {
     type: String,
     required: true,
-    default: pending,
+   
   },
   date: {
     publisDate: {
