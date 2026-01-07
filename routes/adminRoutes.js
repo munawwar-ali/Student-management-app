@@ -74,14 +74,11 @@ routes.post("/create/teacher", async function (req, res) {
       address,
     });
 
-    //setup jwt
-
-    const token = jwt.sign({ email }, "king");
 
     //send response
     res.status(201).send({
-      createTeacher,
-    });
+      createTeacher,})
+    
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server failed" });
@@ -107,6 +104,87 @@ routes.post('/update/:teacherId',async function (req,res) {
 
 
 //students routes
+routes.post("/create/student", async function (req, res) {
+  try {
+    const {
+      name,
+      email,
+      password,
+      role,
+      classStudent,
+      fees,
+      address,
+      teacherIds
+    } = req.body;
+
+    // basic validation
+    if (!name || !email || !password) {
+      return res.status(400).send({
+        error: "name, email and password all required"
+      });
+    }
+
+    // checking student existing or not
+    const existingStudent = await studentModel.findOne({ email });
+    if (existingStudent) {
+      return res.status(409).send({
+        error: "student already exists"
+      });
+    }
+
+    // checking teacher is available or not
+    const teacher = await teacherModel.findById(teacherIds);
+    if (!teacher) {
+      return res.status(404).send({
+        message: "Teacher not found"
+      });
+    }
+
+    // hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // calculate due fees
+    const due = fees.total - fees.paid;
+
+    // create student
+    const createdStudent = await studentModel.create({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      classStudent, 
+      address,
+      fees: {
+        total: fees.total, 
+        paid: fees.paid,
+        due
+      },
+      teacher: teacherIds
+    });
+
+    // send response
+    res.status(201).send({
+      message: "Student created successfully",
+      createdStudent
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      error: "Server failed for some reasons"
+    });
+  }
+});
+
+routes.get("/students", async function (req, res) {
+  try {
+    const students = await studentModel.find();
+  res.send(students);
+  } catch (error) {
+    res.status(500).send({error:"server failed"})
+  }
+  
+});
 
 
 
