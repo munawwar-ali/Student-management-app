@@ -9,13 +9,13 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const isLogedIn = require("../middlewares/auth");
 const isAdmin = require("../middlewares/adminRole");
-const {adminLogin} = require('../controller/adminController')
-
+const { adminLogin } = require("../controller/adminController");
+const { teacherCreate } = require("../controller/adminController");
 
 routes.use(cookieParser());
 
 
-routes.post("/login", adminLogin)
+routes.post("/login", adminLogin);
 
 routes.get("/logout", function (req, res) {
   res.cookie("token", "");
@@ -31,48 +31,10 @@ routes.get("/teacher", isLogedIn, isAdmin, async function (req, res) {
     res.status(500).send({ error: "server failed" });
   }
 });
-routes.post("/create/teacher", isLogedIn, isAdmin, async function (req, res) {
-  try {
-    const { name, email, password, role, subject, salary, address } = req.body;
-    //basic validation
-    if (!name || !email || !password) {
-      res.status(400).send({ error: "name,email and password all requireds" });
-    }
-    //checking teacher existing or not
-    const existingTeacher = await teacherModel.findOne({ email });
-    if (existingTeacher) {
-      return res.status(409).json({ error: "Teacher already exists" });
-    }
+routes.post("/create/teacher", isLogedIn, isAdmin, teacherCreate);
 
-    // now hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    //creating a teacher
-    const createTeacher = await teacherModel.create({
-      name,
-      email,
-      password: hashedPassword,
-      role,
-      subject,
-      salary,
-      address,
-    });
-
-    //send response
-    res.status(201).send({
-      createTeacher,
-       loginDetails: {
-        email: email,
-        password: password   
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server failed" });
-  }
-});
-
-routes.post("/update/:teacherId",
+routes.post(
+  "/update/:teacherId",
   isLogedIn,
   isAdmin,
   async function (req, res) {
@@ -108,7 +70,7 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
       fees,
       address,
       teacherIds,
-      attendence
+      attendence,
     } = req.body;
 
     // basic validation
@@ -141,7 +103,7 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
     const due = fees.total - fees.paid;
 
     //calculate absentence day
-    const absent = attendence.total - attendence.present
+    const absent = attendence.total - attendence.present;
 
     // create student
     const createdStudent = await studentModel.create({
@@ -157,11 +119,11 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
         due,
       },
       teacher: teacherIds,
-      attendence:{
-        total:attendence.total,
-        present:attendence.present,
+      attendence: {
+        total: attendence.total,
+        present: attendence.present,
         absent,
-      }
+      },
     });
 
     // send response
@@ -170,8 +132,8 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
       createdStudent,
       loginDetails: {
         email: email,
-        password: password   
-      }
+        password: password,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -192,9 +154,7 @@ routes.get("/students", isLogedIn, isAdmin, async function (req, res) {
 
 routes.get("/student/:id", isLogedIn, isAdmin, async (req, res) => {
   try {
-    const student = await studentModel
-      .findById(req.params.id)
-     
+    const student = await studentModel.findById(req.params.id);
 
     if (!student) {
       return res.status(404).json({ message: "student not found" });
@@ -206,7 +166,8 @@ routes.get("/student/:id", isLogedIn, isAdmin, async (req, res) => {
   }
 });
 
-routes.post("/update/:studentId",
+routes.post(
+  "/update/:studentId",
   isLogedIn,
   isAdmin,
   async function (req, res) {
@@ -237,8 +198,6 @@ routes.post("/update/:studentId",
     }
   }
 );
-
-
 
 routes.get("/", function (req, res) {
   res.send("hello admin!!Ready to Start work again click to login");

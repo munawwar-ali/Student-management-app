@@ -9,11 +9,14 @@ const adminSchema = mongoose.Schema({
     type:String,
     required:true,
     unique:true,
-    lowercase:true
+    lowercase:true,
+    match: [/^\S+@\S+\.\S+$/, "Invalid email format"],
+    
   },
   password:{
     type:String,
-    required:true
+    required:true,
+    minlength:8
   },
   role:{
     type:String,
