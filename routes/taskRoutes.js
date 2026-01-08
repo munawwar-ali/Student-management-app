@@ -4,13 +4,13 @@ const teacherModel = require("../models/Teacher");
 const taskModel = require("../models/Task");
 const isLogedIn = require("../middlewares/auth");
 const isAdmin = require("../middlewares/adminRole");
-const isAdminOrTeacher = require("../middlewares/admin&teacher");
+
 const isTeacher = require('../middlewares/teacherRole')
 const isStudent = require('../middlewares/studentRole')
 
 //admin 
 
-routes.post("/create/tasks", isLogedIn, isAdminOrTeacher, async (req, res) => {
+routes.post("/create/tasks", isLogedIn,  async (req, res) => {
   try {
     const { title, description, givenby, status, date } = req.body;
     // checking asigner is available or not

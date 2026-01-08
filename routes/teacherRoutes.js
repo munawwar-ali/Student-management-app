@@ -9,7 +9,7 @@ routes.use(cookieParser());
 
 const isTeacher = require("../middlewares/teacherRole");
 
-const isAdminOrTeacher = require("../middlewares/admin&teacher");
+
 
 //login
 routes.post("/login", async (req, res) => {
