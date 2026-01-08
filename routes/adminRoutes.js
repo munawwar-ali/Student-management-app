@@ -86,6 +86,10 @@ routes.post("/create/teacher", isLogedIn, isAdmin, async function (req, res) {
     //send response
     res.status(201).send({
       createTeacher,
+       loginDetails: {
+        email: email,
+        password: password   
+      }
     });
   } catch (err) {
     console.error(err);
@@ -189,6 +193,10 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
     res.status(201).send({
       message: "Student created successfully",
       createdStudent,
+      loginDetails: {
+        email: email,
+        password: password   
+      }
     });
   } catch (err) {
     console.error(err);
