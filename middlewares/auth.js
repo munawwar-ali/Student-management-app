@@ -4,7 +4,7 @@ module.exports=(req, res, next)=> {
   const token = req.cookies.token;
 
   if (!token) {
-    return res.send("something wrong");
+    return res.send("You need to login first");
   }
 
   try {

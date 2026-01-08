@@ -33,7 +33,7 @@ routes.post("/login", async (req, res) => {
         res.cookie("token", token);
 
         //send respone
-        res.send("You can login");
+        res.send("login successfully");
       } else res.send("something is wrong");
       console.log(result);
     });
@@ -129,6 +129,7 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
       fees,
       address,
       teacherIds,
+      attendence
     } = req.body;
 
     // basic validation
@@ -160,6 +161,9 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
     // calculate due fees
     const due = fees.total - fees.paid;
 
+    //calculate absentence day
+    const absent = attendence.total - attendence.present
+
     // create student
     const createdStudent = await studentModel.create({
       name,
@@ -174,6 +178,11 @@ routes.post("/create/student", isLogedIn, isAdmin, async function (req, res) {
         due,
       },
       teacher: teacherIds,
+      attendence:{
+        total:attendence.total,
+        present:attendence.present,
+        absent,
+      }
     });
 
     // send response
@@ -195,6 +204,22 @@ routes.get("/students", isLogedIn, isAdmin, async function (req, res) {
     res.send(students);
   } catch (error) {
     res.status(500).send({ error: "server failed" });
+  }
+});
+
+routes.get("/student/:id", isLogedIn, isAdmin, async (req, res) => {
+  try {
+    const student = await studentModel
+      .findById(req.params.id)
+     
+
+    if (!student) {
+      return res.status(404).json({ message: "student not found" });
+    }
+
+    res.send(student);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid student ID" });
   }
 });
 

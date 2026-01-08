@@ -1,14 +1,14 @@
 const express = require("express");
 const routes = express.Router();
 const teacherModel = require("../models/Teacher");
-const taskModel = require('../models/Task')
+const taskModel = require("../models/Task");
 const isLogedIn = require("../middlewares/auth");
-const isAdmin = require('../middlewares/adminRole')
-const isAdminOrTeacher = require('../middlewares/admin&teacher')
+const isAdmin = require("../middlewares/adminRole");
+const isAdminOrTeacher = require("../middlewares/admin&teacher");
+const isTeacher = require('../middlewares/teacherRole')
+const isStudent = require('../middlewares/studentRole')
 
-
-
-
+//admin 
 
 routes.post("/create/tasks", isLogedIn, isAdminOrTeacher, async (req, res) => {
   try {
@@ -54,25 +54,104 @@ routes.get("/tasks", isLogedIn, isAdmin, async function (req, res) {
   }
 });
 
-routes.post("/update/:taskId",isLogedIn,isAdminOrTeacher,
+routes.post("/update/:taskId", isLogedIn, isAdmin, async function (req, res) {
+ 
+  try {
+    // saving data from req.body
+    const { title, description, givenby, status, date } = req.body;
+    //find and update
+    let updatetasks = await taskModel.findOneAndUpdate(
+      { _id: req.params.taskId },
+      { title, description, givenby, status, date },
+      { new: true }
+    );
+
+    if (!updatetasks) {
+      return res.status(404).send("Task not found");
+    }
+
+
+    res.send(updatetasks);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({ error: "Server failed" });
+  }
+});
+
+routes.get("/:id",isLogedIn,isAdmin, async (req, res) => {
+  try {
+    const task = await taskModel.findById(req.params.id);
+
+    if (!task)
+      return res.status(404).json({ message: "task not found" });
+
+    res.send(task);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid task ID" });
+  }
+});
+
+
+//teacher updating routes
+
+routes.post("/teacher/update/:taskId", isLogedIn,isTeacher,
   async function (req, res) {
     try {
-      // saving data from req.body
-      const { title, description, givenby, status, date } = req.body;
-      //find and update
-      let updatetasks = await taskModel.findOneAndUpdate(
+      const { title, description } = req.body;
+
+      let updatedTask = await taskModel.findOneAndUpdate(
         { _id: req.params.taskId },
-        { title, description, givenby, status, date },
+        { title, description },   
         { new: true }
       );
-      //sending response
-      res.send(updatetasks);
-    } catch (error) {
-      console.error(err);
 
-      res.status(500).json({ error: "Server failed" });
+      if (!updatedTask) {
+        return res.status(404).send("Task not found");
+      }
+
+      res.send(updatedTask);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({ error: "Server failed" });
     }
   }
 );
+routes.get("/teacher/task/:id", isLogedIn, isTeacher, async (req, res) => {
+  try {
+    const task = await taskModel
+      .findById(req.params.id)
+      .select("title description date");
+
+    if (!task) {
+      return res.status(404).json({ message: "task not found" });
+    }
+
+    res.json(task);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid task ID" });
+  }
+});
+
+//student getting task
+
+routes.get("/student/task/:id", isLogedIn, isStudent, async (req, res) => {
+  try {
+    const task = await taskModel
+      .findById(req.params.id)
+      .select("title description date");
+
+    if (!task) {
+      return res.status(404).json({ message: "task not found" });
+    }
+
+    res.json(task);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid task ID" });
+  }
+});
+
+
+
 
 module.exports = routes;

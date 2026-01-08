@@ -44,6 +44,11 @@ const studentsSchema = mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Teacher",
   },
+  attendence:{
+    total:Number,
+    present:Number,
+    absent:Number
+  }
 });
 
 module.exports = mongoose.model("students", studentsSchema);
